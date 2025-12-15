@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Create Shift{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Create New Shift</h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- THIS IS THE NEW PART – SHOWS CONFLICT ERRORS -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button type="submit" class="btn btn-success">
+                    Create Shift
+                </button>
+                <a href="{% url 'shifts' %}" class="btn btn-secondary">
+                    Back to Shifts
+                </a>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Daily Report</h2>
+
+<form method="get">
+    <label>Select date:</label>
+    <input type="date" name="date" value="{{ selected_date }}">
+    <button type="submit">View</button>
+</form>
+
+<hr>
+
+{% if selected_date %}
+    <h3>Shifts on {{ selected_date }}</h3>
+
+    {% if shifts %}
+        <ul>
+        {% for shift in shifts %}
+            <li>{{ shift.start }} → {{ shift.end }} — {{ shift.user.username }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No shifts on this date.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

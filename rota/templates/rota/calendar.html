@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Shift Calendar{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h2 class="text-primary text-center mb-3">
+                Shift Calendar – {{ month }}/{{ year }}
+            </h2>
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-content-center mb-3">
+                <a href="?month={{ month|add:"-1" }}&year={{ year }}"
+                   class="btn btn-outline-primary me-2">
+                    ⬅ Previous
+                </a>
+
+                <a href="?month={{ month|add:"1" }}&year={{ year }}"
+                   class="btn btn-outline-primary">
+                    Next ➡
+                </a>
+            </div>
+
+            <!-- Calendar Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                            <th>Sun</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for week in calendar %}
+                        <tr>
+                            {% for day in week %}
+                            <td class="{% if not day.is_current_month %}bg-light text-muted{% endif %}"
+                                style="height: 120px; vertical-align: top;">
+
+                                <strong>{{ day.date.day }}</strong>
+
+                                {% for shift in day.shifts %}
+                                    <div class="mt-1">
+                                        <span class="badge w-100 text-wrap {% if shift.status == 'pending' %}bg-warning{% elif shift.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ shift.title }}<br>
+                                            <small>{{ shift.user.username }} ({{ shift.status|title }})</small>
+                                        </span>
+                                    </div>
+                                {% endfor %}
+
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

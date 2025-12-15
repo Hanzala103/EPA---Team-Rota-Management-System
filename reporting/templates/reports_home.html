@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Reporting Dashboard</h2>
+
+<p><strong>Total shifts in system:</strong> {{ total_shifts }}</p>
+<p><strong>Upcoming shifts:</strong> {{ upcoming_shifts }}</p>
+
+<hr>
+
+<h3>Report Types</h3>
+
+<ul>
+    <li><a href="{% url 'daily-report' %}">Daily Report</a></li>
+    <li><a href="{% url 'weekly-report' %}">Weekly Report</a></li>
+    <li><a href="{% url 'monthly-report' %}">Monthly Report</a></li>
+</ul>
+
+{% endblock %}

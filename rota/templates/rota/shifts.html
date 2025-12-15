@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}All Shifts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-primary">All Shifts</h2>
+
+        {% if request.user.role == "manager" or request.user.role == "admin" %}
+        <a href="{% url 'shift_create' %}" class="btn btn-success">
+            ➕ Create New Shift
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>User</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        {% if request.user.role == "manager" or request.user.role == "admin" %}
+                        <th style="width: 180px;">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for shift in shifts %}
+                    <tr>
+                        <td>{{ shift.title }}</td>
+                        <td>{{ shift.user.username }}</td>
+                        <td>{{ shift.start|date:"Y-m-d H:i" }}</td>
+                        <td>{{ shift.end|date:"Y-m-d H:i" }}</td>
+
+                        <!-- Status Badge -->
+                        <td>
+                            {% if shift.status == "approved" %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif shift.status == "pending" %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+
+                        {% if request.user.role == "manager" or request.user.role == "admin" %}
+                        <td>
+                            <!-- Approve/Reject buttons for managers -->
+                            {% if shift.status == "pending" %}
+                                <a href="{% url 'approve_shift' shift.id %}" class="btn btn-sm btn-success">
+                                    ✔ Approve
+                                </a>
+                                <a href="{% url 'reject_shift' shift.id %}" class="btn btn-sm btn-danger">
+                                    ✖ Reject
+                                </a>
+                            {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled>Processed</button>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No shifts found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

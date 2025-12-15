@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Pending Leave Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Pending Leave Requests</h2>
+    {% if leaves %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Dates</th>
+                    <th>Reason</th>
+                    <th>Requested</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td>{{ leave.user.get_full_name|default:leave.user.username }}</td>
+                    <td>{{ leave.start_date }} → {{ leave.end_date }}</td>
+                    <td>{{ leave.reason|default:"No reason" }}</td>
+                    <td>{{ leave.requested_at|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'leave_approve' leave.pk %}" class="btn btn-success btn-sm">Approve</a>
+                        <a href="{% url 'leave_reject' leave.pk %}" class="btn btn-danger btn-sm">Reject</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No pending leave requests.</p>
+    {% endif %}
+</div>
+{% endblock %}

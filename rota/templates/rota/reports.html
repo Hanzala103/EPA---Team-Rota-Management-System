@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Monthly Report – {{ month }}</h2>
+    <a href="{% url 'export_csv' %}" class="btn btn-success mb-3">Export All Shifts to CSV</a>
+    
+    <h4>Hours Worked This Month</h4>
+    <table class="table">
+        <tr><th>User</th><th>Hours</th></tr>
+        {% for stat in user_stats %}
+        <tr><td>{{ stat.user }}</td><td>{{ stat.hours }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h4>Coverage Gaps (less than 2 people)</h4>
+    <ul>
+        {% for day in days %}
+            {% if day.gap %}
+                <li class="text-danger">{{ day.date }} – only {{ day.count }} on shift</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

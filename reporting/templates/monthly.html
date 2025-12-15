@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Monthly Report</h2>
+
+<form method="get">
+    <label>Month:</label>
+    <input type="number" name="month" min="1" max="12">
+    <label>Year:</label>
+    <input type="number" name="year" min="2000" max="2100">
+    <button type="submit">View</button>
+</form>
+
+<hr>
+
+{% if selected_month %}
+    <h3>Report for {{ selected_month }}/{{ selected_year }}</h3>
+
+    {% if shifts %}
+        <ul>
+        {% for shift in shifts %}
+            <li>{{ shift.start }} → {{ shift.end }} — {{ shift.user.username }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No shifts in this month.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

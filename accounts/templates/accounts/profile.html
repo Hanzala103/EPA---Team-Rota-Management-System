@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>My Profile</h2>
+
+    <!-- Welcome Message -->
+    <p>Welcome, {{ user.username }}</p>
+
+    <!-- Basic Info -->
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    <!-- Logout Button -->
+    <p><a href="{% url 'logout' %}" class="btn btn-danger">Logout</a></p>
+
+    <!-- Success Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Profile Edit Form -->
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+
+                <p><strong>Team:</strong>
+                    <select name="team" class="form-control">
+                        <option value="">-- No team --</option>
+                        {% for value, label in user.TEAM_CHOICES %}
+                            <option value="{{ value }}" {% if user.team == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+
+                <p><strong>Phone:</strong>
+                    <input type="text" name="phone" value="{{ user.phone }}" class="form-control">
+                </p>
+
+                <p><strong>Department:</strong>
+                    <input type="text" name="department" value="{{ user.department }}" class="form-control">
+                </p>
+
+                <p><strong>Default Start:</strong>
+                    <input type="time" name="default_start_time" value="{{ user.default_start_time }}" class="form-control">
+                </p>
+
+                <p><strong>Default End:</strong>
+                    <input type="time" name="default_end_time" value="{{ user.default_end_time }}" class="form-control">
+                </p>
+
+                <p><strong>Timezone:</strong>
+                    <input type="text" name="timezone" value="{{ user.timezone }}" class="form-control">
+                </p>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+
+            </div>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

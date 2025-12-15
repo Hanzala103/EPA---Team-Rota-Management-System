@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Team Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">Team Dashboard</h2>
+                    <p class="text-muted mb-0">Welcome, {{ request.user.username }} 👋</p>
+                </div>
+
+                <span class="badge bg-secondary fs-6">
+                    Role: {{ request.user.role|title }}
+                </span>
+            </div>
+
+            <hr>
+
+            <!-- ROTA MANAGEMENT SECTION -->
+            <h4 class="mt-3">📅 Rota Management</h4>
+
+            <ul class="list-group mb-4">
+
+                <!-- View Calendar -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Monthly Calendar</span>
+                    <a href="{% url 'calendar' %}" class="btn btn-sm btn-primary">
+                        Open
+                    </a>
+                </li>
+
+                <!-- View All Shifts -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>View All Shifts</span>
+                    <a href="{% url 'shifts' %}" class="btn btn-sm btn-secondary">
+                        Open
+                    </a>
+                </li>
+
+                <!-- Manager-only tools -->
+                {% if request.user.role == "manager" or request.user.role == "admin" %}
+                
+                <!-- Create Shift -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Create New Shift</span>
+                    <a href="{% url 'shift_create' %}" class="btn btn-sm btn-success">
+                        Create
+                    </a>
+                </li>
+
+                <!-- Pending Approvals -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Pending Shift Approvals</span>
+                    <a href="{% url 'pending_shifts' %}" class="btn btn-sm btn-warning">
+                        Review
+                    </a>
+                </li>
+
+                {% endif %}
+            </ul>
+
+            <!-- REPORTS SECTION -->
+            <!-- Reports section temporarily disabled (URL not found) -->
+<!-- 
+<h4 class="mt-3">Reports</h4>
+<ul class="list-group mb-4">
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>Generate Reports</span>
+    <span class="text-muted">Coming soon</span>
+  </li>
+</ul>
+-->
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

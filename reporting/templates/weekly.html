@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Weekly Report</h2>
+
+<form method="get">
+    <label>Select a date within the week:</label>
+    <input type="date" name="date">
+    <button type="submit">View</button>
+</form>
+
+<hr>
+
+{% if week_start %}
+    <h3>Week: {{ week_start }} → {{ week_end }}</h3>
+
+    {% if shifts %}
+        <ul>
+        {% for shift in shifts %}
+            <li>{{ shift.start }} → {{ shift.end }} — {{ shift.user.username }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No shifts this week.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

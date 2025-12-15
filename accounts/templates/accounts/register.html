@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h2>Register</h2>
+
+{% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.errors }}
+  </div>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Create Account</button>
+</form>
+
+<p>Already registered? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}

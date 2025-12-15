@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Pending Approvals{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-3 text-warning">⏳ Pending Shift Approvals</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Shift</th>
+                <th>User</th>
+                <th>Start</th>
+                <th>End</th>
+                <th style="width: 160px;">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for shift in shifts %}
+            <tr>
+                <td>{{ shift.title }}</td>
+                <td>{{ shift.user.username }}</td>
+                <td>{{ shift.start|date:"Y-m-d H:i" }}</td>
+                <td>{{ shift.end|date:"Y-m-d H:i" }}</td>
+
+                <td class="text-center">
+                    <a href="{% url 'approve-shift' shift.id %}" class="btn btn-sm btn-success">
+                        Approve
+                    </a>
+                    <a href="{% url 'reject-shift' shift.id %}" class="btn btn-sm btn-danger">
+                        Reject
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    No pending shifts.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}
