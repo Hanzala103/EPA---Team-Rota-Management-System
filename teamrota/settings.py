@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'accounts',
-    'rota.apps.RotaConfig',     # <-- FIX
+    'rota.apps.RotaConfig',
     'reporting',
 ]
 
