@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import RegisterForm, LoginForm
-from .models import CustomUser
+from .models import CustomUser, Team
 
 
 def login_view(request):
@@ -56,11 +56,13 @@ def profile_view(request):
         user = request.user
         user.phone = request.POST.get('phone', '')
         user.department = request.POST.get('department', '')
-        user.team = request.POST.get('team')
+        team_id = request.POST.get('team')
+        user.team = Team.objects.filter(id=team_id).first() if team_id else None
         user.default_start_time = request.POST.get('default_start_time') or None
         user.default_end_time = request.POST.get('default_end_time') or None
         user.timezone = request.POST.get('timezone', 'Europe/London')
         user.save()
         messages.success(request, "Profile updated successfully!")
-    
-    return render(request, 'accounts/profile.html', {'user': request.user})
+
+    teams = Team.objects.all()
+    return render(request, 'accounts/profile.html', {'user': request.user, 'teams': teams})

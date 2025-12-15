@@ -17,10 +17,10 @@ from accounts.models import CustomUser
 # ROLE CHECK (safe)
 # -----------------------------
 def is_manager(user):
-    return user.role in ['rota_manager', 'service_manager', 'system_admin'] or user.is_staff or user.is_superuser
+    return user.has_role('rota_manager', 'service_manager', 'system_admin') or user.is_staff or user.is_superuser
 
 def is_service_or_above(user):
-    return user.role in ['service_manager', 'system_admin'] or user.is_staff or user.is_superuser
+    return user.has_role('service_manager', 'system_admin') or user.is_staff or user.is_superuser
 
 def has_conflict(user, start, end, shift_id=None):
     from datetime import datetime

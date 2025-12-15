@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, Team
 
 
 # -------------------------------
@@ -48,6 +48,20 @@ class LoginForm(forms.Form):
 # REGISTER FORM (unchanged original)
 # -------------------------------
 class RegisterForm(UserCreationForm):
+    team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'department', 'phone', 'password1', 'password2', 'role']  # Added 'role'
+        fields = [
+            'username',
+            'email',
+            'department',
+            'phone',
+            'default_start_time',
+            'default_end_time',
+            'timezone',
+            'team',
+            'password1',
+            'password2',
+            'role',
+        ]
