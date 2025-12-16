@@ -48,6 +48,10 @@ class LoginForm(forms.Form):
 class RegisterForm(UserCreationForm):
     team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        return email.lower().strip() if email else email
+
     class Meta:
         model = CustomUser
         fields = [
