@@ -1,19 +1,19 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, Team
 
 
 # -------------------------------
 # LOGIN FORM (just fields + basic validation)
 # -------------------------------
 class LoginForm(forms.Form):
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
+    identifier = forms.CharField(
+        widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your email',
+            'placeholder': 'Email or username',
             'autofocus': True
         }),
-        label="Email"
+        label="Email or Username"
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
@@ -23,24 +23,25 @@ class LoginForm(forms.Form):
         label="Password"
     )
 
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        email = email.lower().strip()
-        return email
+    def clean_identifier(self):
+        identifier = self.cleaned_data['identifier']
+        return identifier.strip()
 
     def clean(self):
         cleaned_data = super().clean()
-        email = cleaned_data.get('email')
+        identifier = cleaned_data.get('identifier')
         password = cleaned_data.get('password')
-        if email and password:
-            try:
-                user = CustomUser.objects.get(email=email)
-                if user.check_password(password):
-                    self.user = user
-                else:
-                    raise forms.ValidationError("Invalid email or password.")
-            except CustomUser.DoesNotExist:
-                raise forms.ValidationError("Invalid email or password.")
+        if identifier and password:
+            user = (
+                CustomUser.objects.filter(email__iexact=identifier).first()
+                or CustomUser.objects.filter(username__iexact=identifier).first()
+            )
+            if user and user.check_password(password):
+                if not user.is_active:
+                    raise forms.ValidationError("This account is inactive.")
+                self.user = user
+            else:
+                raise forms.ValidationError("Invalid username/email or password.")
         return cleaned_data
 
 
@@ -48,6 +49,24 @@ class LoginForm(forms.Form):
 # REGISTER FORM (unchanged original)
 # -------------------------------
 class RegisterForm(UserCreationForm):
+    team = forms.ModelChoiceField(queryset=Team.objects.all(), required=False)
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        return email.lower().strip() if email else email
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'department', 'phone', 'password1', 'password2', 'role']  # Added 'role'
+        fields = [
+            'username',
+            'email',
+            'department',
+            'phone',
+            'default_start_time',
+            'default_end_time',
+            'timezone',
+            'team',
+            'password1',
+            'password2',
+            'role',
+        ]
