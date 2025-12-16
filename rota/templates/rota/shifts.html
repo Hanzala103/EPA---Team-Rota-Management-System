@@ -9,6 +9,7 @@
         <h2 class="text-primary">All Shifts</h2>
 
         {% if request.user|has_role:"rota_manager,system_admin" %}
+        {% if request.user.has_role('rota_manager', 'system_admin') %}
         <a href="{% url 'shift_create' %}" class="btn btn-success">
             ➕ Create New Shift
         </a>
@@ -27,6 +28,7 @@
                         <th>End</th>
                         <th>Status</th>
                         {% if request.user|has_role:"rota_manager,system_admin" %}
+                        {% if request.user.has_role('rota_manager', 'system_admin') %}
                         <th style="width: 180px;">Actions</th>
                         {% endif %}
                     </tr>
@@ -52,6 +54,7 @@
                         </td>
 
                         {% if request.user|has_role:"rota_manager,system_admin" %}
+                        {% if request.user.has_role('rota_manager', 'system_admin') %}
                         <td>
                             <!-- Approve/Reject buttons for managers -->
                             {% if shift.status == "pending" %}
