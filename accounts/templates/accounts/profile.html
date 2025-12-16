@@ -34,8 +34,8 @@
                 <p><strong>Team:</strong>
                     <select name="team" class="form-control">
                         <option value="">-- No team --</option>
-                        {% for value, label in user.TEAM_CHOICES %}
-                            <option value="{{ value }}" {% if user.team == value %}selected{% endif %}>{{ label }}</option>
+                        {% for team in teams %}
+                            <option value="{{ team.id }}" {% if user.team == team %}selected{% endif %}>{{ team.name }}</option>
                         {% endfor %}
                     </select>
                 </p>

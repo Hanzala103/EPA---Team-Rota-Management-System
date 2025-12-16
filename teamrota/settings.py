@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'accounts',
-    'rota.apps.RotaConfig',     # <-- FIX
+    'rota.apps.RotaConfig',
     'reporting',
 ]
 
@@ -119,5 +119,6 @@ LOGIN_URL = '/accounts/login/'
 
 # Use Django's default ModelBackend for authentication by email (with USERNAME_FIELD)
 AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
