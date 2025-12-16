@@ -68,11 +68,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-    def save(self, *args, **kwargs):
-        if self.email:
-            self.email = self.email.lower().strip()
-        return super().save(*args, **kwargs)
-
     def has_role(self, *codes: str) -> bool:
         if self.role in codes:
             return True
