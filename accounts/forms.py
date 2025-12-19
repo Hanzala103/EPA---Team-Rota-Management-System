@@ -34,8 +34,9 @@ class LoginForm(forms.Form):
         password = cleaned_data.get('password')
         if email and password:
             try:
-                user = CustomUser.objects.get(email=email)
-                if user.check_password(password):
+                # Use case-insensitive lookup so stored email case doesn't block login
+                user = CustomUser.objects.filter(email__iexact=email).first()
+                if user and user.check_password(password):
                     self.user = user
                 else:
                     raise forms.ValidationError("Invalid email or password.")
@@ -51,3 +52,13 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'department', 'phone', 'password1', 'password2', 'role']  # Added 'role'
+
+    def save(self, commit=True):
+        # Normalize email to lowercase when creating users so authentication is consistent
+        user = super().save(commit=False)
+        email = self.cleaned_data.get('email')
+        if email:
+            user.email = email.lower().strip()
+        if commit:
+            user.save()
+        return user
