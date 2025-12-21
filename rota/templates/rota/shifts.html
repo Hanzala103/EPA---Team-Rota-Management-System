@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load role_tags %}
 {% block title %}All Shifts{% endblock %}
 
 {% block content %}
@@ -7,8 +8,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-primary">All Shifts</h2>
 
-        {% if request.user.role == "manager" or request.user.role == "admin" %}
-        <a href="{% url 'shift_create' %}" class="btn btn-success">
+        {% if request.user|has_role:"rota_manager,system_admin" %}
+        <a href="{% url 'create-shift' %}" class="btn btn-success">
             ➕ Create New Shift
         </a>
         {% endif %}
@@ -25,7 +26,7 @@
                         <th>Start</th>
                         <th>End</th>
                         <th>Status</th>
-                        {% if request.user.role == "manager" or request.user.role == "admin" %}
+                        {% if request.user|has_role:"rota_manager,system_admin" %}
                         <th style="width: 180px;">Actions</th>
                         {% endif %}
                     </tr>
@@ -50,14 +51,14 @@
                             {% endif %}
                         </td>
 
-                        {% if request.user.role == "manager" or request.user.role == "admin" %}
+                        {% if request.user|has_role:"rota_manager,system_admin" %}
                         <td>
                             <!-- Approve/Reject buttons for managers -->
                             {% if shift.status == "pending" %}
-                                <a href="{% url 'approve_shift' shift.id %}" class="btn btn-sm btn-success">
+                                <a href="{% url 'approve-shift' shift.id %}" class="btn btn-sm btn-success">
                                     ✔ Approve
                                 </a>
-                                <a href="{% url 'reject_shift' shift.id %}" class="btn btn-sm btn-danger">
+                                <a href="{% url 'reject-shift' shift.id %}" class="btn btn-sm btn-danger">
                                     ✖ Reject
                                 </a>
                             {% else %}
