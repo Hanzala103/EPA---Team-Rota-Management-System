@@ -3,6 +3,38 @@
 
 {% block content %}
 
+<style>
+    /* Fix table layout so columns don't expand to fit long event labels */
+    .table-fixed {
+        table-layout: fixed;
+        width: 100%;
+    }
+    .table-fixed th, .table-fixed td {
+        width: 14.2857%; /* 100/7 */
+        overflow: hidden;
+        word-break: break-word;
+    }
+    /* Grey out weekends */
+    .table-fixed td.weekend {
+        background-color: #f2f2f2;
+    }
+    /* Stronger selector to ensure weekends are greyed even with Bootstrap table styles */
+    .table.table-bordered.table-fixed tbody tr td:nth-child(6),
+    .table.table-bordered.table-fixed tbody tr td:nth-child(7) {
+        background-color: #f2f2f2 !important;
+    }
+    /* Ensure shift badge fits inside the cell and wraps */
+    .shift-badge {
+        display: block;
+        max-width: 100%;
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: .35rem .5rem;
+        border-radius: .35rem;
+    }
+</style>
+
 <div class="container mt-4">
 
     <div class="card shadow-sm">
@@ -26,24 +58,8 @@
             </div>
 
             <!-- Calendar Table -->
-            <style>
-                /* Fixed table layout so columns can't expand to fit content */
-                .rota-calendar { table-layout: fixed; width: 100%; }
-                .rota-calendar th, .rota-calendar td { width: 14.2857%; vertical-align: top; }
-
-                /* Grey out weekend columns (Saturday=6, Sunday=7) */
-                .rota-calendar tbody tr td:nth-child(6),
-                .rota-calendar tbody tr td:nth-child(7) {
-                    background-color: #f6f7f8 !important;
-                }
-
-                /* Ensure shift badges wrap and don't force column width */
-                .rota-calendar td { overflow: hidden; }
-                .shift-badge { display: inline-block; max-width: 100%; white-space: normal; word-break: break-word; overflow: hidden; }
-            </style>
-
             <div class="table-responsive">
-                <table class="table table-bordered text-center align-middle rota-calendar">
+                <table class="table table-bordered text-center align-middle table-fixed">
                     <thead class="table-dark">
                         <tr>
                             <th>Mon</th>
@@ -60,8 +76,11 @@
                         {% for week in calendar %}
                         <tr>
                             {% for day in week %}
-                            <td class="{% if not day.is_current_month %}bg-light text-muted{% endif %}"
-                                style="height: 120px;">
+                            {# mark weekend cells and keep previous classes for other states #}
+                            {% with day.date|date:"N" as weekday %}
+                            <td class="{% if not day.is_current_month %}bg-light text-muted{% endif %}{% if weekday == "6" or weekday == "7" %} weekend{% endif %}"
+                                style="height: 120px; vertical-align: top;">
+                            {% endwith %}
 
                                 <strong>{{ day.date.day }}</strong>
 

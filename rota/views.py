@@ -14,13 +14,15 @@ from accounts.models import CustomUser
 
 
 # -----------------------------
-# ROLE CHECK (safe)
+# ROLE CHECKS
 # -----------------------------
-def is_manager(user):
-    return user.has_role('rota_manager', 'service_manager', 'system_admin') or user.is_staff or user.is_superuser
+# Editors = can create/approve shifts and manage leave approvals
+def is_editor(user):
+    return user.has_role('rota_manager', 'system_admin') or user.is_staff or user.is_superuser
 
-def is_service_or_above(user):
-    return user.has_role('service_manager', 'system_admin') or user.is_staff or user.is_superuser
+# Reporting/read elevated roles = can view team data and reports
+def is_reporting(user):
+    return user.has_role('service_manager', 'rota_manager', 'system_admin') or user.is_staff or user.is_superuser
 
 def has_conflict(user, start, end, shift_id=None):
     from datetime import datetime
@@ -74,7 +76,7 @@ def calendar_view(request):
     first_day = date(year, month, 1)
     last_day = date(year, month, monthrange(year, month)[1])
 
-    if is_manager(request.user):
+    if is_reporting(request.user):
         shifts = Shift.objects.filter(start__date__gte=first_day, start__date__lte=last_day)
     else:
         shifts = Shift.objects.filter(user=request.user, start__date__gte=first_day, start__date__lte=last_day)
@@ -109,7 +111,7 @@ def calendar_view(request):
 # -----------------------------
 @login_required
 def shifts_view(request):
-    if is_manager(request.user):
+    if is_reporting(request.user):
         shifts = Shift.objects.all().order_by("start")
     else:
         shifts = Shift.objects.filter(user=request.user).order_by("start")
@@ -119,7 +121,7 @@ def shifts_view(request):
 # -----------------------------
 # CREATE NEW SHIFT (manager only)
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def create_shift(request):
     if request.method == "POST":
@@ -146,7 +148,7 @@ def create_shift(request):
 # -----------------------------
 # PENDING SHIFTS (manager only)
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def pending_shifts(request):
     shifts = Shift.objects.filter(status="pending")
@@ -156,7 +158,7 @@ def pending_shifts(request):
 # -----------------------------
 # APPROVE SHIFT
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def approve_shift(request, shift_id):
     shift = get_object_or_404(Shift, id=shift_id)
@@ -168,7 +170,7 @@ def approve_shift(request, shift_id):
 # -----------------------------
 # REJECT SHIFT
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def reject_shift(request, shift_id):
     shift = get_object_or_404(Shift, id=shift_id)
@@ -200,7 +202,7 @@ def leave_request_view(request):
 # -----------------------------
 # PENDING LEAVE VIEW
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def leave_pending_view(request):
     leaves = LeaveRequest.objects.filter(status='pending').order_by('requested_at')
@@ -210,7 +212,7 @@ def leave_pending_view(request):
 # -----------------------------
 # LEAVE APPROVE
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def leave_approve(request, pk):
     leave = get_object_or_404(LeaveRequest, pk=pk)
@@ -225,7 +227,7 @@ def leave_approve(request, pk):
 # -----------------------------
 # LEAVE REJECT
 # -----------------------------
-@user_passes_test(is_manager)
+@user_passes_test(is_editor)
 @login_required
 def leave_reject(request, pk):
     leave = get_object_or_404(LeaveRequest, pk=pk)
@@ -241,7 +243,7 @@ def leave_reject(request, pk):
 # PEPORTS VIEW
 # -----------------------------
 @login_required
-@user_passes_test(lambda u: u.role in ['rota_manager', 'system_admin'])
+@user_passes_test(is_reporting)
 def reports_view(request):
     today = date.today()
     month_start = today.replace(day=1)
@@ -279,7 +281,7 @@ def reports_view(request):
 # EXPORT REPORTS CSV
 #----------------------------
 @login_required
-@user_passes_test(lambda u: u.role in ['rota_manager', 'system_admin'])
+@user_passes_test(is_reporting)
 def export_shifts_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="shifts_export.csv"'
