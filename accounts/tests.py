@@ -28,6 +28,22 @@ class LoginFlowTests(TestCase):
         self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
         self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
 
+    def test_login_with_username(self):
+        response = self.client.post(
+            reverse("login"),
+            {"identifier": "tester", "password": "StrongPass123!"},
+        )
+        self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
+
+    def test_login_with_case_insensitive_email(self):
+        response = self.client.post(
+            reverse("login"),
+            {"identifier": "TESTER@EXAMPLE.COM", "password": "StrongPass123!"},
+        )
+        self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
+
     def test_email_is_normalized_on_save(self):
         self.assertEqual(self.user.email, "tester@example.com")
 

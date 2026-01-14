@@ -85,3 +85,67 @@ class RotaTests(TestCase):
         )
         with self.assertRaises(ValidationError):
             shift.clean()
+
+    def test_shift_end_before_start_rejected(self):
+        self.client.login(username='manager', password='test123')
+        response = self.client.post(reverse('create-shift'), {
+            'title': 'Backwards shift',
+            'user': self.member.id,
+            'start': '2025-12-21T17:00',
+            'end': '2025-12-21T09:00'
+        })
+        self.assertContains(response, "Shift end time must be after start time.", status_code=200)
+
+    def test_overlapping_shift_rejected(self):
+        Shift.objects.create(
+            user=self.member,
+            title="Existing shift",
+            start=datetime(2025, 12, 22, 9, 0),
+            end=datetime(2025, 12, 22, 17, 0),
+        )
+        self.client.login(username='manager', password='test123')
+        response = self.client.post(reverse('create-shift'), {
+            'title': 'Overlapping shift',
+            'user': self.member.id,
+            'start': '2025-12-22T12:00',
+            'end': '2025-12-22T18:00'
+        })
+        self.assertContains(
+            response,
+            "Cannot create shift: You already have a shift during this time.",
+            status_code=200,
+        )
+
+    def test_calendar_month_boundary_december_to_january(self):
+        self.client.login(username='manager', password='test123')
+        response = self.client.get(reverse('calendar'), {'month': 13, 'year': 2024})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['month'], 1)
+        self.assertEqual(response.context['year'], 2025)
+
+        month_calendar = response.context['calendar']
+        self.assertEqual(len(month_calendar), 6)
+        self.assertTrue(all(len(week) == 7 for week in month_calendar))
+        self.assertEqual(month_calendar[0][0]['date'], date(2024, 12, 30))
+
+    def test_reports_blocked_for_team_member(self):
+        self.client.login(username='john', password='test123')
+        response = self.client.get(reverse('reports'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response.url)
+
+    def test_csv_export_for_reporting_role(self):
+        Shift.objects.create(
+            user=self.member,
+            title="Morning",
+            start=datetime(2025, 12, 5, 9, 0),
+            end=datetime(2025, 12, 5, 17, 0),
+            status='approved',
+        )
+        self.client.login(username='manager', password='test123')
+        response = self.client.get(reverse('export_csv'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        content = response.content.decode()
+        self.assertIn('User,Title,Start,End,Status', content)
+        self.assertIn('john,Morning,', content)
