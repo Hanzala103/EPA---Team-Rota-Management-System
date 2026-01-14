@@ -27,7 +27,7 @@
                         <th>End</th>
                         <th>Status</th>
                         {% if request.user|has_role:"rota_manager,system_admin" %}
-                        <th style="width: 180px;">Actions</th>
+                        <th style="width: 260px;">Actions</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -54,6 +54,7 @@
                         {% if request.user|has_role:"rota_manager,system_admin" %}
                         <td>
                             <!-- Approve/Reject buttons for managers -->
+                            <div class="d-flex gap-2">
                             {% if shift.status == "pending" %}
                                 <a href="{% url 'approve-shift' shift.id %}" class="btn btn-sm btn-success">
                                     ✔ Approve
@@ -64,6 +65,12 @@
                             {% else %}
                                 <button class="btn btn-sm btn-secondary" disabled>Processed</button>
                             {% endif %}
+
+                                <!-- Delete action (confirmation page) -->
+                                <a href="{% url 'delete-shift' shift.id %}" class="btn btn-sm btn-outline-danger">
+                                    🗑 Delete
+                                </a>
+                            </div>
                         </td>
                         {% endif %}
                     </tr>

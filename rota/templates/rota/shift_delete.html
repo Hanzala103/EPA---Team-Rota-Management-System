@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Delete Shift{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Delete Shift</h4>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">
+                Are you sure you want to delete the shift
+                <strong>{{ shift.title }}</strong> for
+                <strong>{{ shift.user.username }}</strong>
+                on <strong>{{ shift.start|date:"Y-m-d H:i" }}</strong>?
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete shift</button>
+                <a href="{% url 'shifts' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

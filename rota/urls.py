@@ -15,6 +15,7 @@ urlpatterns = [
     # Optional but good to have (used by approve/reject buttons)
     path("approve/<int:shift_id>/", views.approve_shift, name="approve-shift"),
     path("reject/<int:shift_id>/", views.reject_shift, name="reject-shift"),
+    path("delete/<int:shift_id>/", views.delete_shift, name="delete-shift"),
 
     path('leave/request/', views.leave_request_view, name='leave_request'),
     path('leave/pending/', views.leave_pending_view, name='leave_pending'),

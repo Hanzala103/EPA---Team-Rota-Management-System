@@ -184,6 +184,20 @@ def reject_shift(request, shift_id):
 
 
 # -----------------------------
+# DELETE SHIFT (confirmation + POST)
+# -----------------------------
+@user_passes_test(is_editor)
+@login_required
+def delete_shift(request, shift_id):
+    shift = get_object_or_404(Shift, id=shift_id)
+    if request.method == "POST":
+        shift.delete()
+        messages.success(request, "Shift deleted.")
+        return redirect("shifts")
+    return render(request, "rota/shift_delete.html", {"shift": shift})
+
+
+# -----------------------------
 # LEAVE REQUEST VIEW
 # -----------------------------
 @login_required
@@ -244,7 +258,7 @@ def leave_reject(request, pk):
 
 
 # -----------------------------
-# PEPORTS VIEW
+# REPORTS VIEW
 # -----------------------------
 @login_required
 @user_passes_test(is_reporting)
