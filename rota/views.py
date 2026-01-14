@@ -30,6 +30,10 @@ def has_conflict(user, start, end, shift_id=None):
 
     start_dt = datetime.combine(start, datetime.min.time())
     end_dt = datetime.combine(end, datetime.max.time())
+    if timezone.is_naive(start_dt):
+        start_dt = timezone.make_aware(start_dt)
+    if timezone.is_naive(end_dt):
+        end_dt = timezone.make_aware(end_dt)
 
     # Check overlapping shifts
     overlapping_shifts = Shift.objects.filter(user=user).exclude(pk=shift_id)
