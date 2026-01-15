@@ -87,6 +87,12 @@ def calendar_view(request):
     else:
         shifts = Shift.objects.filter(user=request.user, start__date__gte=first_day, start__date__lte=last_day)
 
+    # Also include leave requests that overlap this month (approved or pending)
+    if is_reporting(request.user):
+        leaves = LeaveRequest.objects.filter(end_date__gte=first_day, start_date__lte=last_day)
+    else:
+        leaves = LeaveRequest.objects.filter(user=request.user, end_date__gte=first_day, start_date__lte=last_day)
+
     month_calendar = []
     start_week = first_day - timedelta(days=first_day.weekday())
 
@@ -96,9 +102,13 @@ def calendar_view(request):
             current = start_week + timedelta(days=week * 7 + day)
             day_shifts = shifts.filter(start__date=current)
 
+            # leaves that include this day
+            day_leaves = leaves.filter(start_date__lte=current, end_date__gte=current)
+
             week_days.append({
                 "date": current,
                 "shifts": day_shifts,
+                "leaves": day_leaves,
                 "is_current_month": current.month == month
             })
         month_calendar.append(week_days)
@@ -108,6 +118,8 @@ def calendar_view(request):
         "month": month,
         "year": year,
     }
+    # indicate whether current user can manage/report (used in templates)
+    context["is_manager"] = is_reporting(request.user)
 
     return render(request, "rota/calendar.html", context)
 
@@ -117,11 +129,63 @@ def calendar_view(request):
 # -----------------------------
 @login_required
 def shifts_view(request):
+    # Base queryset depends on role: managers/reporting see all, others see only their shifts
     if is_reporting(request.user):
-        shifts = Shift.objects.all().order_by("start")
+        shifts_qs = Shift.objects.all().order_by("start")
     else:
-        shifts = Shift.objects.filter(user=request.user).order_by("start")
-    return render(request, "rota/shifts.html", {"shifts": shifts})
+        shifts_qs = Shift.objects.filter(user=request.user).order_by("start")
+
+    # Filters from GET params
+    title_q = request.GET.get('title', '').strip()
+    status_q = request.GET.get('status', 'all')
+    user_q = request.GET.get('user', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+
+    if title_q:
+        # allow partial matches
+        shifts_qs = shifts_qs.filter(title__icontains=title_q)
+
+    if status_q and status_q != 'all':
+        shifts_qs = shifts_qs.filter(status=status_q)
+
+    # Allow managers to filter by user (partial username)
+    users = None
+    if user_q and is_reporting(request.user):
+        shifts_qs = shifts_qs.filter(user__username__icontains=user_q)
+    if is_reporting(request.user):
+        users = CustomUser.objects.values_list('username', flat=True).distinct().order_by('username')
+
+    # Date range filtering (on start date)
+    from datetime import date as _date
+    if date_from:
+        try:
+            d1 = _date.fromisoformat(date_from)
+            shifts_qs = shifts_qs.filter(start__date__gte=d1)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            d2 = _date.fromisoformat(date_to)
+            shifts_qs = shifts_qs.filter(start__date__lte=d2)
+        except ValueError:
+            pass
+
+    # Provide list of existing titles for the datalist/autocomplete
+    titles = Shift.objects.values_list('title', flat=True).distinct().order_by('title')
+
+    context = {
+        "shifts": shifts_qs,
+        "titles": titles,
+        "users": users,
+        "selected_title": title_q,
+        "selected_status": status_q,
+        "selected_date_from": date_from,
+        "selected_date_to": date_to,
+        "selected_user": user_q,
+        "is_manager": is_reporting(request.user),
+    }
+    return render(request, "rota/shifts.html", context)
 
 
 # -----------------------------
@@ -204,7 +268,14 @@ def delete_shift(request, shift_id):
 # -----------------------------
 @login_required
 def leave_request_view(request):
+    # Only team members should submit leave requests
+    user_requests = LeaveRequest.objects.filter(user=request.user).order_by('-requested_at')
+
     if request.method == 'POST':
+        if request.user.role != 'team_member':
+            messages.error(request, "Only team members can submit leave requests.")
+            return redirect('leave_request')
+
         start = request.POST['start_date']
         end = request.POST['end_date']
         reason = request.POST.get('reason', '')
@@ -215,8 +286,9 @@ def leave_request_view(request):
             reason=reason
         )
         messages.success(request, "Leave request submitted!")
-        return redirect('dashboard')
-    return render(request, 'rota/leave_request.html')
+        return redirect('leave_request')
+
+    return render(request, 'rota/leave_request.html', {'user_requests': user_requests})
 
 
 # -----------------------------
@@ -225,8 +297,9 @@ def leave_request_view(request):
 @user_passes_test(is_editor)
 @login_required
 def leave_pending_view(request):
-    leaves = LeaveRequest.objects.filter(status='pending').order_by('requested_at')
-    return render(request, 'rota/leave_pending.html', {'leaves': leaves})
+    # Show both pending and approved leaves (rename pending view to 'Leaves')
+    leaves = LeaveRequest.objects.filter(status__in=['pending', 'approved']).order_by('-requested_at')
+    return render(request, 'rota/leaves.html', {'leaves': leaves})
 
 
 # -----------------------------

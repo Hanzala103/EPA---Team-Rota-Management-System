@@ -33,6 +33,23 @@
         padding: .35rem .5rem;
         border-radius: .35rem;
     }
+    /* Leave bar styling (thin across days) */
+    .leave-bar {
+        display: block;
+        height: 20px;
+        line-height: 18px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #fff;
+        margin-top: .25rem;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .leave-bar.approved { background: #fd0d0d; }
+    .leave-bar.pending { background: #ffc107; color: #212529; }
 </style>
 
 <div class="container mt-4">
@@ -86,10 +103,26 @@
 
                                 {% for shift in day.shifts %}
                                     <div class="mt-1">
-                                        <span class="badge shift-badge {% if shift.status == 'pending' %}bg-warning{% elif shift.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
-                                            {{ shift.title }}<br>
-                                            <small>{{ shift.user.username }} ({{ shift.status|title }})</small>
-                                        </span>
+                                        <a href="{% url 'shifts' %}" class="text-decoration-none d-block">
+                                            <span class="badge shift-badge {% if shift.status == 'pending' %}bg-warning{% elif shift.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ shift.title }}<br>
+                                                <small>{{ shift.user.username }} ({{ shift.status|title }})</small>
+                                            </span>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+
+                                {% for leave in day.leaves %}
+                                    <div class="mt-1">
+                                        {% if is_manager %}
+                                        <a href="{% url 'leave_pending' %}" class="text-decoration-none d-block">
+                                        {% else %}
+                                        <a href="{% url 'leave_request' %}" class="text-decoration-none d-block">
+                                        {% endif %}
+                                            <span class="leave-bar {% if leave.status == 'approved' %}approved{% else %}pending{% endif %}">
+                                                {{ leave.user.username }} — {{ leave.status|title }}
+                                            </span>
+                                        </a>
                                     </div>
                                 {% endfor %}
 
