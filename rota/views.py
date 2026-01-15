@@ -39,7 +39,9 @@ def has_conflict(user, start, end, shift_id=None):
     overlapping_shifts = Shift.objects.filter(user=user).exclude(pk=shift_id)
     for shift in overlapping_shifts:
         if start_dt < shift.end and end_dt > shift.start:
-            return True, "You already have a shift during this time."
+            # Include the user's display name in the message
+            display = user.get_full_name() or user.username
+            return True, f"{display} already has a shift during this time."
 
     # Check approved leave
     approved_leaves = LeaveRequest.objects.filter(
